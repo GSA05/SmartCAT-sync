@@ -86,4 +86,15 @@ sub getFile {
     }
 }
 
+sub saveFile {
+    my ($self, $project, $name, $target_language, $body) = @_;
+
+    my $path = "C:\\Projects\\Serge\\Test\\po\\$project\\$target_language\\$name";
+    print $path;
+    open(my $fh, '>', $path) or die "Could not open file '$path' $!";
+    print $fh $body;
+    close $fh;
+    print "done\n";
+}
+
 1;

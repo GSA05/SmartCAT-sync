@@ -20,7 +20,10 @@ sub execute {
   my @documents = $self->app->getProjectDocuments($opt->{project}, $opt->{token_id}, $opt->{token});
 
   foreach my $document (@documents) {
-      print $self->app->getFile($opt->{token_id}, $opt->{token}, $document->{id});
+      my $body = $self->app->getFile($opt->{token_id}, $opt->{token}, $document->{id});
+      my $name = $document->{name}.'.po';
+      my $target_language = $document->{targetLanguage};
+      $self->app->saveFile($opt->{project}, $name, $target_language, $body);
   }
 
   print "Everything has been initialized.  (Not really.)\n";
