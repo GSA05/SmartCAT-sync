@@ -19,6 +19,10 @@ sub execute {
 
   my @documents = $self->app->getProjectDocuments($opt->{project}, $opt->{token_id}, $opt->{token});
 
+  foreach my $document (@documents) {
+      print $self->app->getFile($opt->{token_id}, $opt->{token}, $document->{id});
+  }
+
   print "Everything has been initialized.  (Not really.)\n";
 }
 

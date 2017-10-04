@@ -44,7 +44,7 @@ sub execute {
     #$file_content->add_content('{}');
     #$request->add_part($file_content);
 
-    my $file = 'C:\Projects\Serge\Test\0e811ad8-f350-475b-808f-895d85e54da9\test.txt';
+    my $file = 'C:\Projects\Serge\Test\Test\po\0e811ad8-f350-475b-808f-895d85e54da9\ru\test.txt.po';
     open(my $fh, '<:bytes', $file);
     my $size = (stat $file)[7];
     my $header = HTTP::Headers->new;
@@ -61,7 +61,7 @@ sub execute {
     if ($response->is_success) {
         print $response->content;
     } else {
-        die $response->status_line;
+        #die $response->status_line;
     }
 
     #my $tx = $ua->get('https://'.($opt->{token_id}).':'.($opt->{token}).'@smartcat.ai/api/integration/v1/project/0e811ad8-f350-475b-808f-895d85e54da9');
