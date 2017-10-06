@@ -29,9 +29,8 @@ sub getProjectDocuments {
 
     $request->header('Accept' => 'application/json');
     $request->header('Authorization' => 'Basic '.$key);
-    #$request->protocol('HTTP/1.0');
 
-    print $request->as_string;
+    #print $request->as_string;
 
     my $response = $ua->request($request);
     if ($response->is_success) {
@@ -59,9 +58,8 @@ sub getFile {
     $request->header('Accept' => 'application/json');
     $request->header('Authorization' => 'Basic '.$key);
     $request->header('Content-Length' => 0);
-    #$request->protocol('HTTP/1.0');
 
-    print $request->as_string;
+    #print $request->as_string;
 
     my $response = $ua->request($request);
     if ($response->is_success) {
@@ -71,13 +69,13 @@ sub getFile {
 
         $request2->header('Accept' => 'application/json');
         $request2->header('Authorization' => 'Basic '.$key);
-        #$request->protocol('HTTP/1.0');
 
-        print $request2->as_string;
+        #print $request2->as_string;
 
+        sleep 1;
         my $response2 = $ua->request($request2);
         if ($response2->is_success) {
-            return $response2->content;
+            return $response2->decoded_content;
         } else {
             die $response2->status_line;
         }
@@ -87,14 +85,56 @@ sub getFile {
 }
 
 sub saveFile {
-    my ($self, $project, $name, $target_language, $body) = @_;
+    my ($self, $po_path, $project, $name, $target_language, $body) = @_;
 
-    my $path = "C:\\Projects\\Serge\\Test\\po\\$project\\$target_language\\$name";
+    my $path = "$po_path\\$project\\$target_language\\$name";
     print $path;
     open(my $fh, '>', $path) or die "Could not open file '$path' $!";
     print $fh $body;
     close $fh;
-    print "done\n";
+    print "\ndone\n";
+}
+
+sub updateFile {
+    my ($self, $project, $token_id, $token, $documentId, $name, $target_language) = @_;
+
+    my $key = $self->getAuthKey($token_id, $token);
+
+    Class::Load::load_class('LWP::UserAgent');
+    Class::Load::load_class('Mojo::URL');
+
+    my $ua = LWP::UserAgent->new;
+
+    my $url = Mojo::URL->new('https://smartcat.ai/api/integration/v1/document/update');
+    $url->query({documentId => $documentId});
+    my $request = HTTP::Request->new('PUT', $url->to_string);
+
+    my $boundary = 'X';
+    my @rand = ('a'..'z', 'A'..'Z');
+    for (0..14) {$boundary .= $rand[rand(@rand)];}
+
+    $request->header('Content-Type' => 'multipart/form-data; boundary='.$boundary);
+    $request->header('Authorization' => 'Basic '.$key);
+
+    my $path = "C:\\Projects\\Serge\\Test\\po\\$project\\$target_language\\$name.po";
+    open(my $fh, '<:bytes', $path);
+    my $size = (stat $path)[7];
+    my $header = HTTP::Headers->new;
+    $header->header('Content-Disposition' => 'form-data; name="documentModel"; filename="'.$name.'"');
+    $header->header('Content-Type' => 'application/octet-stream');
+    my $file_content = HTTP::Message->new($header);
+    $file_content->add_content($_) while <$fh>;
+    $request->add_part($file_content);
+    close $fh;
+
+    #print $request->as_string;
+
+    my $response = $ua->request($request);
+    if ($response->is_success) {
+        print $response->content;
+    } else {
+        die $response->status_line;
+    }
 }
 
 1;
