@@ -16,8 +16,6 @@ sub opt_spec {
 sub execute {
   my ($self, $opt, $args) = @_;
 
-  my $key = $self->app->getAuthKey($opt->{token_id}, $opt->{token});
-
   my @documents = $self->app->getProjectDocuments($opt->{project}, $opt->{token_id}, $opt->{token});
 
   foreach my $document (@documents) {
