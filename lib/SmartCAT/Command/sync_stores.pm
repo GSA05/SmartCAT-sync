@@ -20,7 +20,7 @@ sub execute {
 
   foreach my $document (@documents) {
       my $body = $self->app->getFile($opt->{token_id}, $opt->{token}, $document->{id});
-      $body =~ s/\r\n/\n/g;
+      $body =~ s/\r\n/\012/g;
       my $name = $document->{name}.'.po';
       my $target_language = $document->{targetLanguage};
       $self->app->saveFile($opt->{po_path}, $opt->{project}, $name, $target_language, $body);
