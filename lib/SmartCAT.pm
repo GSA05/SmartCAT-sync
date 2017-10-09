@@ -90,13 +90,14 @@ sub saveFile {
     my $path = "$po_path\\$project\\$target_language\\$name";
     print $path;
     open(my $fh, '>', $path) or die "Could not open file '$path' $!";
+    binmode($fh);
     print $fh $body;
     close $fh;
     print "\ndone\n";
 }
 
 sub updateFile {
-    my ($self, $project, $token_id, $token, $documentId, $name, $target_language) = @_;
+    my ($self, $po_path, $project, $token_id, $token, $documentId, $name, $target_language) = @_;
 
     my $key = $self->getAuthKey($token_id, $token);
 
@@ -116,24 +117,26 @@ sub updateFile {
     $request->header('Content-Type' => 'multipart/form-data; boundary='.$boundary);
     $request->header('Authorization' => 'Basic '.$key);
 
-    my $path = "C:\\Projects\\Serge\\Test\\po\\$project\\$target_language\\$name.po";
+    my $path = "$po_path\\$project\\$target_language\\$name.po";
     open(my $fh, '<:bytes', $path);
     my $size = (stat $path)[7];
     my $header = HTTP::Headers->new;
-    $header->header('Content-Disposition' => 'form-data; name="documentModel"; filename="'.$name.'"');
-    $header->header('Content-Type' => 'application/octet-stream');
+    $header->header('Content-Disposition' => 'form-data; name="'.$name.'_'.$target_language.'"; filename="'.$name.'_'.$target_language.'.po"');
+    $header->header('Content-Type' => 'application/octetstream');
     my $file_content = HTTP::Message->new($header);
     $file_content->add_content($_) while <$fh>;
+    $file_content =~ s/\012/\r\n/g;
     $request->add_part($file_content);
     close $fh;
 
     #print $request->as_string;
 
     my $response = $ua->request($request);
+    #print Dumper($response);
     if ($response->is_success) {
-        print $response->content;
+        #print $response->content;
     } else {
-        die $response->status_line;
+        print $response->status_line;
     }
 }
 
