@@ -140,4 +140,75 @@ sub updateFile {
     }
 }
 
+sub getFiles {
+    my ($self, $po_path, $project) = @_;
+
+    my $path = "$po_path\\$project";
+
+    my $first_lang_dir;
+    opendir(DIR, $path) or die $!;
+    while (my $lang_dir = readdir(DIR)) {
+      next if ($lang_dir =~ m/^\./);
+      $first_lang_dir = $lang_dir;
+      last;
+    }
+    closedir(DIR);
+
+    $path = "$path\\$first_lang_dir";
+    my @files;
+    opendir(LANG_DIR, $path) or die $!;
+    while (my $file = readdir(LANG_DIR)) {
+      if ($file =~ m/\.po$/) {
+        push @files, $file;
+      }
+    }
+    closedir(LANG_DIR);
+
+    return @files;
+}
+
+sub uploadFile {
+    my ($self, $po_path, $project, $token_id, $token, $name, $target_language) = @_;
+
+    my $key = $self->getAuthKey($token_id, $token);
+
+    Class::Load::load_class('LWP::UserAgent');
+    Class::Load::load_class('Mojo::URL');
+
+    my $ua = LWP::UserAgent->new;
+
+    my $url = Mojo::URL->new('https://smartcat.ai/api/integration/v1/project/document');
+    $url->query({projectId => $project});
+    my $request = HTTP::Request->new('POST', $url->to_string);
+
+    my $boundary = 'X';
+    my @rand = ('a'..'z', 'A'..'Z');
+    for (0..14) {$boundary .= $rand[rand(@rand)];}
+
+    $request->header('Content-Type' => 'multipart/form-data; boundary='.$boundary);
+    $request->header('Authorization' => 'Basic '.$key);
+
+    my $path = "$po_path\\$project\\$target_language\\$name";
+    open(my $fh, '<:bytes', $path);
+    my $size = (stat $path)[7];
+    my $header = HTTP::Headers->new;
+    $header->header('Content-Disposition' => 'form-data; name="'.$name.'"; filename="'.$name.'"');
+    $header->header('Content-Type' => 'application/octetstream');
+    my $file_content = HTTP::Message->new($header);
+    $file_content->add_content($_) while <$fh>;
+    $file_content =~ s/\012/\r\n/g;
+    $request->add_part($file_content);
+    close $fh;
+
+    #print $request->as_string;
+
+    my $response = $ua->request($request);
+    #print Dumper($response);
+    if ($response->is_success) {
+        #print $response->content;
+    } else {
+        print $response->status_line;
+    }
+}
+
 1;
