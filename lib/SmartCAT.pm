@@ -87,7 +87,7 @@ sub getFile {
 sub saveFile {
     my ($self, $po_path, $project, $name, $target_language, $body) = @_;
 
-    my $path = "$po_path\\$project\\$target_language\\$name";
+    my $path = "$po_path/$project/$target_language/$name";
     print $path;
     open(my $fh, '>', $path) or die "Could not open file '$path' $!";
     binmode($fh);
@@ -117,7 +117,7 @@ sub updateFile {
     $request->header('Content-Type' => 'multipart/form-data; boundary='.$boundary);
     $request->header('Authorization' => 'Basic '.$key);
 
-    my $path = "$po_path\\$project\\$target_language\\$name.po";
+    my $path = "$po_path/$project/$target_language/$name.po";
     open(my $fh, '<:bytes', $path);
     my $size = (stat $path)[7];
     my $header = HTTP::Headers->new;
@@ -143,10 +143,10 @@ sub updateFile {
 sub getFiles {
     my ($self, $po_path, $project) = @_;
 
-    my $path = "$po_path\\$project";
+    my $path = "$po_path/$project";
 
     my $first_lang_dir;
-    opendir(DIR, $path) or die $!;
+    opendir(DIR, $path) or die "Could not open dir '$path' $!";
     while (my $lang_dir = readdir(DIR)) {
       next if ($lang_dir =~ m/^\./);
       $first_lang_dir = $lang_dir;
@@ -154,9 +154,9 @@ sub getFiles {
     }
     closedir(DIR);
 
-    $path = "$path\\$first_lang_dir";
+    $path = "$path/$first_lang_dir";
     my @files;
-    opendir(LANG_DIR, $path) or die $!;
+    opendir(LANG_DIR, $path) or die "Could not open dir '$path' $!";
     while (my $file = readdir(LANG_DIR)) {
       if ($file =~ m/\.po$/) {
         push @files, $file;
@@ -188,7 +188,7 @@ sub uploadFile {
     $request->header('Content-Type' => 'multipart/form-data; boundary='.$boundary);
     $request->header('Authorization' => 'Basic '.$key);
 
-    my $path = "$po_path\\$project\\$target_language\\$name";
+    my $path = "$po_path/$project/$target_language/$name";
     open(my $fh, '<:bytes', $path);
     my $size = (stat $path)[7];
     my $header = HTTP::Headers->new;

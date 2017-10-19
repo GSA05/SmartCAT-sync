@@ -33,7 +33,7 @@ sub execute {
         }
     }
 
-    my $path = $opt->{po_path}.'\\'.$opt->{project};
+    my $path = $opt->{po_path}.'/'.$opt->{project};
 
     my $first_lang_dir;
     opendir(DIR, $path) or die $!;
