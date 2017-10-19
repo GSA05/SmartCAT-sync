@@ -129,14 +129,15 @@ sub updateFile {
     $request->add_part($file_content);
     close $fh;
 
-    #print $request->as_string;
-
     my $response = $ua->request($request);
+    #sleep 2;
     #print Dumper($response);
     if ($response->is_success) {
         #print $response->content;
     } else {
-        print $response->status_line;
+        print "\n\nFailed to update file: $path";
+        print "\n\nRequest:\n".$request->as_string;
+        print "\n\nResponse:\n".$response->as_string;
     }
 }
 
@@ -200,14 +201,14 @@ sub uploadFile {
     $request->add_part($file_content);
     close $fh;
 
-    #print $request->as_string;
-
     my $response = $ua->request($request);
     #print Dumper($response);
     if ($response->is_success) {
         #print $response->content;
     } else {
-        print $response->status_line;
+        print "\n\nFailed to upload file: $path";
+        print "\n\nRequest:\n".$request->as_string;
+        print "\n\nResponse:\n".$response->as_string;
     }
 }
 
